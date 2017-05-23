@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image search microservice</title>
+
+    <link rel="stylesheet" href="./css/normalize.css">
+    <link rel="stylesheet" href="./css/skeleton.css">
+</head>
+<body>
+
+<div class="container">
+    <h3>Image search microservice</h3>
+    <em>A freeCodeCamp project by Ilya Murashov</em>
+    <p>This service allows you to find images using Google Custom Search API. The search result is return in form of JSON array containing JSON objects with <code>link</code>, <code>alt</code>, and <code>foundOn</code> fields representing the image link, image description, and the website address the image was found on, respectively.</p>
+
+    <h4>Usage example</h4>
+    <p>
+        The entry point for the image search is <code>/api/[string to query]?offset=[pagination]</code>. If <code>offset</code> query is omitted from the URL, the first page will be returned.
+    </p>
+    <p>
+        <code>https://fcc-im-image-search.herokuapp.com/api/dank%20memes</code>
+        <br>
+        or
+        <br>
+        <code>https://fcc-im-image-search.herokuapp.com/api/dank%20memes?offset=2</code>
+    </p>
+
+    <p>
+        A JSON array with 10 results representing a search page will be returned.
+    </p>
+</div>
+</body>
+</html>

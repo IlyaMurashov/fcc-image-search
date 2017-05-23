@@ -7,6 +7,12 @@ const baseUrl = 'https://www.googleapis.com/customsearch/v1';
 
 app.set('port', (process.env.PORT || 5000));
 
+app.use(express.static(path.join(__dirname, '/public')));
+
+app.get('/', (_, res) => {
+  res.sendFile('index.html');
+});
+
 app.get('/api/:query', (req, res) => {
   const page = getPageFromRequest(req);
 
