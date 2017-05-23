@@ -10,11 +10,28 @@ app.set('port', (process.env.PORT || 5000));
 app.get('/api/:query', (req, res) => {
   const page = getPageFromRequest(req);
 
+  console.log(req.originalUrl);
+
   getImages(req.params.query, page)
     .then(
-      (json) => res.json(projectSearchResult(json)),
-      (err) => res.status(500).end(err)
+      (json) => {
+        const imageArray = projectSearchResult(json);
+        res.json(imageArray);
+
+        return imageArray;
+      },
+      (err) => {
+        res.status(500).end(err);
+      }
     );
+
+  persistQuery(req.originalUrl);
+});
+
+app.get('/latest', (req, res) => {
+  queryLastQueriesArray()
+    .then(arr => res.json(arr))
+    .catch(() => res.status(500).end("An error occurred while fetching the latest queries"));
 });
 
 const getImages = (query, page = 1) => {
@@ -77,7 +94,7 @@ const projectSearchResult = (json) => {
     let returnArr = [];
 
     json.items.forEach(i => {
-      const {link, title, displayLink} = i;
+      const { link, title, displayLink } = i;
 
       returnArr.push({
         link: link,
@@ -89,8 +106,46 @@ const projectSearchResult = (json) => {
     return returnArr;
   }
   catch (e) {
-    return {error: "An error occurred while parsing the return JSON string"};
+    return { error: "An error occurred while parsing the return JSON string" };
   }
+};
+
+const persistQuery = (query) => {
+  mongo.connect(process.env.MDLABS_SHORTLY)
+    .then(
+      (db) => {
+        db.collection('imageQueries')
+          .insertOne({
+            date: (new Date()).toDateString(),
+            q: query
+          })
+          .then(
+            () => console.log(`Insert: ${query}`),
+            (err) => console.error(`Failed persisting a query: ${err}. Query: ${query}`)
+          )
+          .then(() => db.close());
+      }
+    )
+    .catch((err) => console.error(`Failed on connecting to DB: ${err}`));
+};
+
+const queryLastQueriesArray = () => {
+  return new Promise((resolve, reject) => {
+    mongo.connect(process.env.MDLABS_SHORTLY)
+      .then(
+        (db) => {
+          resolve(
+            db.collection('imageQueries')
+              .find().sort({ $natural: -1 }).limit(10)
+              .toArray()
+          );
+        }
+      )
+      .catch((err) => {
+        console.error(`Failed on connecting to DB: ${err}`);
+        reject();
+      });
+  });
 };
 
 app.listen(app.get('port'), function () {
